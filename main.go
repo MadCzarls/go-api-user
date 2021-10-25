@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var db = make(map[string]string)
+var inMemoryDb = make(map[string]string)
 
 func setupRouter() *gin.Engine {
 	// Disable Console Color
@@ -21,7 +21,7 @@ func setupRouter() *gin.Engine {
 	// Get user value
 	r.GET("/user/:name", func(c *gin.Context) {
 		user := c.Params.ByName("name")
-		value, ok := db[user]
+		value, ok := inMemoryDb[user]
 		if ok {
 			c.JSON(http.StatusOK, gin.H{"user": user, "value": value})
 		} else {
@@ -59,7 +59,7 @@ func setupRouter() *gin.Engine {
 		}
 
 		if c.Bind(&json) == nil {
-			db[user] = json.Value
+			inMemoryDb[user] = json.Value
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		}
 	})
@@ -68,6 +68,23 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	//db := database.Client()
+	//
+	////@TODO example usage below
+	//ctx := context.Background()
+	//
+	//err := db.Set(ctx, "test_key", "test_value2222", 0).Err()
+	//
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//val, err := db.Get(ctx, "test_key").Result()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println("test_key value is: ", val)
+
 	r := setupRouter()
 	// Listen and Server in 0.0.0.0:8080
 	r.Run(":8080")
