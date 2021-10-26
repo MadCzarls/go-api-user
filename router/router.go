@@ -2,7 +2,9 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mad-czarls/go-api-user/container"
 	"github.com/mad-czarls/go-api-user/handler/ping"
+	"github.com/mad-czarls/go-api-user/handler/user"
 )
 
 func SetupRouter() *gin.Engine {
@@ -17,17 +19,17 @@ func SetupRouter() *gin.Engine {
 		pingGroup.GET("", pingHandler.Status)
 	}
 
-	//api := router.Group("/api")
-	//{
-	//	userHandler := user.Handler{}
-	//	userGroup := api.Group("/user")
-	//	{
-	//		userGroup.GET("", userHandler.GetUserList)
-	//		//@TODO
-	//		//userGroup.POST("", userHandler.Create)
-	//		//userGroup.PUT("", userHandler.Update)
-	//	}
-	//}
+	api := router.Group("/api")
+	{
+		userHandler := user.Handler{UserRepository: container.GetUserRepository()}
+		userGroup := api.Group("/user")
+		{
+			userGroup.GET("", userHandler.GetUserList)
+			//@TODO
+			//userGroup.POST("", userHandler.Create)
+			//userGroup.PUT("", userHandler.Update)
+		}
+	}
 
 	//@TODO
 	//loginHandler := login.Handler{}
@@ -44,7 +46,6 @@ func SetupRouter() *gin.Engine {
 	//{
 	//	logoutGroup.GET("", logoutHandler.Status)
 	//}
-
 
 	//var inMemoryDb = make(map[string]string)
 	//// Get user value

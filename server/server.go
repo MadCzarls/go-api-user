@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/mad-czarls/go-api-user/container"
 	"github.com/mad-czarls/go-api-user/router"
 	"log"
 	"net/http"
@@ -11,10 +12,12 @@ import (
 	"time"
 )
 
-func Run()  {
+func Run() {
+	redisDataSource := container.GetRedisDataSource()
+
 	//setting up the server
 	server := &http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
 		Handler: router.SetupRouter(),
 	}
 
@@ -36,12 +39,17 @@ func Run()  {
 
 	//HANDLING SHUTDOWN BELOW
 	//context is for notifying the server that it has 5 seconds to finish tasks
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	//cleanup called AFTER shutdown below will be executed
 	defer func() {
 		// add custom processes cleanup here: close database, handle queues etc.
-		cancel() //canceling all process
+		err := redisDataSource.Close()
+		if err != nil {
+			log.Fatalf("Error when shutting down Redis connection: %v\n", err)
+		}
+		// canceling all built-in processes
+		cancel()
 	}()
 
 	log.Println("Shutting down server...")
