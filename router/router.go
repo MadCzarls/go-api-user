@@ -17,15 +17,34 @@ func SetupRouter() *gin.Engine {
 		pingGroup.GET("", pingHandler.Status)
 	}
 
-	//
-	//// user
 	//api := router.Group("/api")
 	//{
-	//	user := api.Group("/user")
+	//	userHandler := user.Handler{}
+	//	userGroup := api.Group("/user")
 	//	{
-	//		user.GET("/")
+	//		userGroup.GET("", userHandler.GetUserList)
+	//		//@TODO
+	//		//userGroup.POST("", userHandler.Create)
+	//		//userGroup.PUT("", userHandler.Update)
 	//	}
 	//}
+
+	//@TODO
+	//loginHandler := login.Handler{}
+	//
+	//loginGroup := router.Group("/login")
+	//{
+	//	loginGroup.GET("", loginHandler.Status)
+	//}
+
+	//@TODO
+	//logoutHandler := logout.Handler{}
+	//
+	//logoutGroup := router.Group("/logout")
+	//{
+	//	logoutGroup.GET("", logoutHandler.Status)
+	//}
+
 
 	//var inMemoryDb = make(map[string]string)
 	//// Get user value
