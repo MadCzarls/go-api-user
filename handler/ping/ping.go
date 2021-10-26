@@ -9,5 +9,11 @@ type Handler struct {
 }
 
 func (handler Handler) Status(context *gin.Context) {
-	context.String(http.StatusOK, "pong")
+	type response struct{
+		Message string `json:"status"`
+	}
+
+	res := response{"pong"}
+
+	context.JSON(http.StatusOK, res)
 }

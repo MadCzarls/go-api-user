@@ -14,7 +14,7 @@ func SetupRouter() *gin.Engine {
 
 	pingGroup := router.Group("/ping")
 	{
-		pingGroup.GET("/", pingHandler.Status)
+		pingGroup.GET("", pingHandler.Status)
 	}
 
 	//
