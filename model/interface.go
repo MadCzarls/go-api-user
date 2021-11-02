@@ -2,7 +2,11 @@ package model
 
 type UserRepository interface {
 	FindById()
-	FindAll() []string //@TODO remove after tests
-	Create()
+	FindAll() ([]User, error)
+	Create(User) error
 	Update()
+}
+
+type Idier interface {
+	SetId(id string)
 }
