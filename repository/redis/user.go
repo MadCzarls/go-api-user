@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/mad-czarls/go-api-user/datasource/redis"
 	"github.com/mad-czarls/go-api-user/model"
@@ -54,20 +55,35 @@ func (u UserRepository) FindAll() ([]model.User, error) {
 }
 
 func (u UserRepository) Create(user *model.User) error {
+	id := uuid.NewString()
+	user.SetId(id)
+
 	if err := u.save(user); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UserRepository) Update() {
-	panic("implement me")
+func (u UserRepository) Update(id string, newUserData *model.User) error {
+	currentUser, err := u.FindById(id)
+
+	if err != nil {
+		return err
+	}
+
+	if currentUser == nil {
+		return errors.New("user does not exist")
+	}
+
+	newUserData.SetId(currentUser.GetId())
+
+	if err := u.save(newUserData); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u UserRepository) save(value model.Idier) error {
-	id := uuid.NewString()
-	value.SetId(id)
-
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -75,7 +91,7 @@ func (u UserRepository) save(value model.Idier) error {
 
 	ctx := context.Background()
 
-	err = u.HSet(ctx, "users", id, data).Err()
+	err = u.HSet(ctx, "users", value.GetId(), data).Err()
 
 	if err != nil {
 		return err

@@ -71,3 +71,24 @@ func (handler Handler) Create(context *gin.Context) {
 
 	context.JSON(http.StatusCreated, http.NoBody)
 }
+
+// Update Example cURL request:
+// curl 'http://localhost:8080/api/user/306ba65d-a4b8-4ebb-a30b-93526b31b8d9' -X PUT --data-raw '{"username": "John", "age":44}'
+func (handler Handler) Update(context *gin.Context) {
+	var requestUser model.User
+	if err := context.ShouldBindJSON(&requestUser); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := handler.UserRepository.Update(context.Param("id"), &requestUser); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, http.NoBody)
+}

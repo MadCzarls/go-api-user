@@ -10,3 +10,6 @@ func (u *User) SetId(id string) {
 	u.Id = id
 }
 
+func (u *User) GetId() string {
+	return u.Id
+}
