@@ -1,9 +1,9 @@
 package model
 
 type UserRepository interface {
-	FindById()
+	FindById(id string) (*User, error)
 	FindAll() ([]User, error)
-	Create(User) error
+	Create(*User) error
 	Update()
 }
 

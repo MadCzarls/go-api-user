@@ -25,6 +25,7 @@ func SetupRouter() *gin.Engine {
 		userGroup := api.Group("/user")
 		{
 			userGroup.GET("", userHandler.GetUserList)
+			userGroup.GET("/:id", userHandler.GetUser)
 			userGroup.POST("", userHandler.Create)
 			//@TODO
 			//userGroup.PUT("", userHandler.Update)

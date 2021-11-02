@@ -26,6 +26,31 @@ func (handler Handler) GetUserList(context *gin.Context) {
 	)
 }
 
+func (handler Handler) GetUser(context *gin.Context) {
+	result, err := handler.UserRepository.FindById(context.Param("id"))
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if result != nil {
+		context.JSON(
+			http.StatusOK,
+			result,
+		)
+		return
+	}
+
+	context.JSON(
+		http.StatusNotFound,
+		http.NoBody,
+	)
+
+}
+
 // Create Example cURL request:
 // curl 'http://localhost:8080/api/user' -X POST --data-raw '{"username": "John", "age":44}'
 func (handler Handler) Create(context *gin.Context) {
@@ -37,7 +62,7 @@ func (handler Handler) Create(context *gin.Context) {
 		return
 	}
 
-	if err := handler.UserRepository.Create(requestUser); err != nil {
+	if err := handler.UserRepository.Create(&requestUser); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
