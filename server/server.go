@@ -18,7 +18,7 @@ func Run() {
 	//setting up the server
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: router.SetupRouter(),
+		Handler: router.SetUpRouter(),
 	}
 
 	//starting server; it is done in goroutine since we want code below (shutdown handling) to be executed

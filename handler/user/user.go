@@ -48,7 +48,6 @@ func (handler Handler) GetUser(context *gin.Context) {
 		http.StatusNotFound,
 		http.NoBody,
 	)
-
 }
 
 // Create Example cURL request:
@@ -61,15 +60,19 @@ func (handler Handler) Create(context *gin.Context) {
 		})
 		return
 	}
+	id, err := handler.UserRepository.Create(&requestUser)
 
-	if err := handler.UserRepository.Create(&requestUser); err != nil {
+	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	context.JSON(http.StatusCreated, http.NoBody)
+	context.JSON(
+		http.StatusCreated,
+		gin.H{"id": id},
+	)
 }
 
 // Update Example cURL request:

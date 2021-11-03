@@ -54,14 +54,14 @@ func (u UserRepository) FindAll() ([]model.User, error) {
 	return result, nil
 }
 
-func (u UserRepository) Create(user *model.User) error {
+func (u UserRepository) Create(user *model.User) (*string, error) {
 	id := uuid.NewString()
 	user.SetId(id)
 
 	if err := u.save(user); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &id, nil
 }
 
 func (u UserRepository) Update(id string, newUserData *model.User) error {
