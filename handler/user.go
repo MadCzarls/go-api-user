@@ -7,16 +7,19 @@ import (
 )
 
 type UserHandler struct {
-	model.UserRepository //@TODO change to service using this repository instead
+	model.UserRepository
 }
 
 func (handler UserHandler) GetUserList(context *gin.Context) {
 	results, err := handler.UserRepository.FindAll()
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
@@ -30,9 +33,12 @@ func (handler UserHandler) GetUser(context *gin.Context) {
 	result, err := handler.UserRepository.FindById(context.Param("id"))
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
@@ -55,23 +61,31 @@ func (handler UserHandler) GetUser(context *gin.Context) {
 func (handler UserHandler) Create(context *gin.Context) {
 	var requestUser model.User
 	if err := context.ShouldBindJSON(&requestUser); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 	id, err := handler.UserRepository.Create(&requestUser)
 
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
 	context.JSON(
 		http.StatusCreated,
-		gin.H{"id": id},
+		gin.H{
+			"id": id,
+		},
 	)
 }
 
@@ -80,18 +94,27 @@ func (handler UserHandler) Create(context *gin.Context) {
 func (handler UserHandler) Update(context *gin.Context) {
 	var requestUser model.User
 	if err := context.ShouldBindJSON(&requestUser); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
 	if err := handler.UserRepository.Update(context.Param("id"), &requestUser); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
-	context.JSON(http.StatusOK, http.NoBody)
+	context.JSON(
+		http.StatusOK,
+		http.NoBody,
+	)
 }

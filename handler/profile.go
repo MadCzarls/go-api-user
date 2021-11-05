@@ -9,19 +9,22 @@ import (
 )
 
 type ProfileHandler struct {
-	model.UserRepository //@TODO change to service using this repository instead
+	model.UserRepository
 }
 
 func (handler ProfileHandler) PersonalInfo(context *gin.Context) {
 	session := sessions.Default(context)
 	userId := session.Get(middleware.UserKey).(string)
 
-	result, err := handler.UserRepository.FindById(userId) //@TODO to be handled
+	result, err := handler.UserRepository.FindById(userId)
 
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		context.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 

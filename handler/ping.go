@@ -13,5 +13,6 @@ func (handler PingHandler) Status(context *gin.Context) {
 		http.StatusOK,
 		gin.H{
 			"message": "pong",
-		})
+		},
+	)
 }

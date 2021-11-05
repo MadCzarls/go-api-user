@@ -9,15 +9,18 @@ import (
 )
 
 type LoginHandler struct {
-	model.UserRepository //@TODO change to service using this repository instead
+	model.UserRepository
 }
 
 func (handler LoginHandler) Login(context *gin.Context) {
 	var authData model.Auth
 	if err := context.ShouldBindJSON(&authData); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
@@ -25,9 +28,12 @@ func (handler LoginHandler) Login(context *gin.Context) {
 	//@TODO implement password handling in the future
 
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		context.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
 		return
 	}
 
@@ -45,7 +51,9 @@ func (handler LoginHandler) Login(context *gin.Context) {
 	if err = session.Save(); err != nil {
 		context.JSON(
 			http.StatusInternalServerError,
-			gin.H{"error": err.Error()},
+			gin.H{
+				"error": err.Error(),
+			},
 		)
 		return
 	}
@@ -54,5 +62,6 @@ func (handler LoginHandler) Login(context *gin.Context) {
 		http.StatusOK,
 		gin.H{
 			"message": "You are logged in!",
-		})
+		},
+	)
 }

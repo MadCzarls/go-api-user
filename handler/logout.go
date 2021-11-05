@@ -19,7 +19,8 @@ func (handler LogoutHandler) Logout(context *gin.Context) {
 			http.StatusBadRequest,
 			gin.H{
 				"error": "Invalid session token",
-			})
+			},
+		)
 		return
 	}
 
@@ -29,7 +30,8 @@ func (handler LogoutHandler) Logout(context *gin.Context) {
 			http.StatusInternalServerError,
 			gin.H{
 				"error": "Failed to save session",
-			})
+			},
+		)
 		return
 	}
 
@@ -37,5 +39,6 @@ func (handler LogoutHandler) Logout(context *gin.Context) {
 		http.StatusOK,
 		gin.H{
 			"message": "Successfully logged out",
-		})
+		},
+	)
 }
