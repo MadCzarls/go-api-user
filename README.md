@@ -3,11 +3,12 @@ _[work-in-progress]_
 # go-api-user
 User-handling API example in GO.
 
-## TODO
-- review all TODOs set in app
+## TODO (must-have)
 - review pointers/value usage
 - review error handling
 - write tests
 - identify race conditions
-- add swagger docs
+
+### TODO (low priority)
+- review and possibly implement rest of the TODOs left in code
 - dockerize
