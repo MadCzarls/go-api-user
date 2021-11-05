@@ -1,14 +1,14 @@
-package ping
+package handler
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type Handler struct {
+type PingHandler struct {
 }
 
-func (handler Handler) Status(context *gin.Context) {
+func (handler PingHandler) Status(context *gin.Context) {
 	context.JSON(
 		http.StatusOK,
 		gin.H{

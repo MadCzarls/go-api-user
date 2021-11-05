@@ -1,4 +1,4 @@
-package profile
+package handler
 
 import (
 	"github.com/gin-gonic/contrib/sessions"
@@ -8,11 +8,11 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type ProfileHandler struct {
 	model.UserRepository //@TODO change to service using this repository instead
 }
 
-func (handler Handler) PersonalInfo(context *gin.Context) {
+func (handler ProfileHandler) PersonalInfo(context *gin.Context) {
 	session := sessions.Default(context)
 	userId := session.Get(middleware.UserKey).(string)
 

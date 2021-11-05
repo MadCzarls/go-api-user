@@ -1,4 +1,4 @@
-package user
+package handler
 
 import (
 	"github.com/gin-gonic/gin"
@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type UserHandler struct {
 	model.UserRepository //@TODO change to service using this repository instead
 }
 
-func (handler Handler) GetUserList(context *gin.Context) {
+func (handler UserHandler) GetUserList(context *gin.Context) {
 	results, err := handler.UserRepository.FindAll()
 
 	if err != nil {
@@ -26,7 +26,7 @@ func (handler Handler) GetUserList(context *gin.Context) {
 	)
 }
 
-func (handler Handler) GetUser(context *gin.Context) {
+func (handler UserHandler) GetUser(context *gin.Context) {
 	result, err := handler.UserRepository.FindById(context.Param("id"))
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (handler Handler) GetUser(context *gin.Context) {
 
 // Create Example cURL request:
 // curl 'http://localhost:8080/api/user' -X POST --data-raw '{"username": "John", "age":44}'
-func (handler Handler) Create(context *gin.Context) {
+func (handler UserHandler) Create(context *gin.Context) {
 	var requestUser model.User
 	if err := context.ShouldBindJSON(&requestUser); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
@@ -77,7 +77,7 @@ func (handler Handler) Create(context *gin.Context) {
 
 // Update Example cURL request:
 // curl 'http://localhost:8080/api/user/306ba65d-a4b8-4ebb-a30b-93526b31b8d9' -X PUT --data-raw '{"username": "John", "age":44}'
-func (handler Handler) Update(context *gin.Context) {
+func (handler UserHandler) Update(context *gin.Context) {
 	var requestUser model.User
 	if err := context.ShouldBindJSON(&requestUser); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{

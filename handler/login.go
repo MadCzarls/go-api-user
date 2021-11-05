@@ -1,4 +1,4 @@
-package login
+package handler
 
 import (
 	"github.com/gin-gonic/contrib/sessions"
@@ -8,11 +8,11 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type LoginHandler struct {
 	model.UserRepository //@TODO change to service using this repository instead
 }
 
-func (handler Handler) Login(context *gin.Context) {
+func (handler LoginHandler) Login(context *gin.Context) {
 	var authData model.Auth
 	if err := context.ShouldBindJSON(&authData); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{

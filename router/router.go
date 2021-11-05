@@ -4,11 +4,7 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/mad-czarls/go-api-user/container"
-	"github.com/mad-czarls/go-api-user/handler/login"
-	"github.com/mad-czarls/go-api-user/handler/logout"
-	"github.com/mad-czarls/go-api-user/handler/ping"
-	"github.com/mad-czarls/go-api-user/handler/profile"
-	"github.com/mad-czarls/go-api-user/handler/user"
+	"github.com/mad-czarls/go-api-user/handler"
 	"github.com/mad-czarls/go-api-user/middleware"
 	"github.com/mad-czarls/go-api-user/session"
 )
@@ -19,7 +15,7 @@ func SetUpRouter() *gin.Engine {
 	router := gin.Default()
 	router.Use(sessions.Sessions("app_session", session.SetUpSession())) //@TODO put name in ENV
 
-	pingHandler := ping.Handler{}
+	pingHandler := handler.PingHandler{}
 	pingGroup := router.Group("/ping")
 	{
 		pingGroup.GET("", pingHandler.Status)
@@ -27,7 +23,7 @@ func SetUpRouter() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		userHandler := user.Handler{UserRepository: container.GetUserRepository()}
+		userHandler := handler.UserHandler{UserRepository: container.GetUserRepository()}
 		userGroup := api.Group("/user")
 		{
 			userGroup.GET("", userHandler.GetUserList)
@@ -37,20 +33,20 @@ func SetUpRouter() *gin.Engine {
 		}
 	}
 
-	loginHandler := login.Handler{UserRepository: container.GetUserRepository()}
+	loginHandler := handler.LoginHandler{UserRepository: container.GetUserRepository()}
 	loginGroup := router.Group("/login")
 	{
 		loginGroup.POST("", loginHandler.Login)
 	}
 
-	profileHandler := profile.Handler{UserRepository: container.GetUserRepository()}
+	profileHandler := handler.ProfileHandler{UserRepository: container.GetUserRepository()}
 	profileGroup := router.Group("/profile")
 	profileGroup.Use(middleware.AuthMiddleware)
 	{
 		profileGroup.GET("/me", profileHandler.PersonalInfo)
 	}
 
-	logoutHandler := logout.Handler{}
+	logoutHandler := handler.LogoutHandler{}
 
 	logoutGroup := router.Group("/logout")
 	{
