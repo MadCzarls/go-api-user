@@ -1,5 +1,6 @@
 package service
 
 type VariableGetter interface {
-	GetVariable(key string) (*string, error)
+	GetEnvString(key string) *string
+	GetEnvInt(key string) *int
 }

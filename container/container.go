@@ -9,31 +9,28 @@ import (
 
 var services = make(map[string]interface{})
 
+func GetEnvManager() service.VariableGetter {
+	if services["envManager"] == nil {
+		s, err := service.NewEnvManager()
+
+		if err != nil {
+			panic (err)
+		}
+		services["envManager"] = s
+	}
+	return services["envManager"].(service.VariableGetter)
+}
+
 func GetRedisDataSource() *redis.DataSource {
 	if services["redisDS"] == nil {
-		//@TODO error handling
-		services["redisDS"] = redis.NewDataSource()
+		services["redisDS"] = redis.NewDataSource(GetEnvManager())
 	}
 	return services["redisDS"].(*redis.DataSource)
 }
 
 func GetRedisUserRepository() model.UserRepository {
 	if services["get"] == nil {
-		//@TODO error handling
-
 		services["userRepo"] = redisRepository.NewUserRepository(GetRedisDataSource())
 	}
 	return services["userRepo"].(model.UserRepository)
-}
-
-func GetEnvManager() (service.VariableGetter, error) {
-	if services["envManager"] == nil {
-		s, err := service.NewEnvManager()
-
-		if err != nil {
-			return nil, err
-		}
-		services["envManager"] = s
-	}
-	return services["envManager"].(service.VariableGetter), nil
 }

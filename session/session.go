@@ -1,10 +1,13 @@
 package session
 
-import "github.com/gin-gonic/contrib/sessions"
+import (
+	"github.com/gin-gonic/contrib/sessions"
+	"github.com/mad-czarls/go-api-user/container"
+)
 
 func SetUpSession() sessions.CookieStore {
-	//@TODO put params in ENVs
-	store := sessions.NewCookieStore([]byte("secret_for_session_hashing"))
+	envManager := container.GetEnvManager()
+	store := sessions.NewCookieStore([]byte(*envManager.GetEnvString("SESSION_HASH_KEY")))
 
 	return store
 }

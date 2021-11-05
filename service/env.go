@@ -1,9 +1,9 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"github.com/joho/godotenv"
+	"strconv"
 )
 
 type envManager struct {
@@ -20,12 +20,27 @@ func NewEnvManager() (*envManager, error) {
 	return &envManager{envs: envs}, nil
 }
 
-func (em *envManager) GetVariable(key string) (*string, error) {
-	value := em.envs[key]
-
-	if value == "" {
-		return nil, errors.New(fmt.Sprintf("env variable for key '%s' does not exist", key))
+func (em *envManager) GetEnvString(key string) *string {
+	if _, present := em.envs[key]; !present {
+		panic(fmt.Sprintf("env variable for key '%s' does not exist", key))
 	}
 
-	return &value, nil
+	value := em.envs[key]
+
+	return &value
+}
+
+func (em *envManager) GetEnvInt(key string) *int {
+	if _, present := em.envs[key]; !present {
+		panic(fmt.Sprintf("env variable for key '%s' does not exist", key))
+	}
+
+	value := em.envs[key]
+	valueInt, err := strconv.Atoi(value)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return &valueInt
 }

@@ -11,9 +11,15 @@ import (
 
 func SetUpRouter() *gin.Engine {
 	//@TODO swagger documentation https://github.com/swaggo/gin-swagger
+	envManager := container.GetEnvManager()
 
 	router := gin.Default()
-	router.Use(sessions.Sessions("app_session", session.SetUpSession())) //@TODO put name in ENV
+	router.Use(
+		sessions.Sessions(
+			*envManager.GetEnvString("SESSION_COOKIE_NAME"),
+			session.SetUpSession(),
+		),
+	)
 
 	pingHandler := handler.PingHandler{}
 	pingGroup := router.Group("/ping")
