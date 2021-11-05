@@ -6,6 +6,8 @@ import (
 	redisRepository "github.com/mad-czarls/go-api-user/repository/redis"
 )
 
+//@TODO redo to struct and proper container with services map
+
 func GetRedisDataSource() *redis.DataSource {
 	return redis.NewDataSource()
 }
