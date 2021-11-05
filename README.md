@@ -4,7 +4,6 @@ _[work-in-progress]_
 User-handling API example in GO.
 
 ## TODO (must-have)
-- review pointers/value usage
 - review error handling
 - write tests
 - identify race conditions

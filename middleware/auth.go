@@ -16,7 +16,9 @@ func AuthMiddleware(context *gin.Context) {
 	if userId == nil {
 		context.AbortWithStatusJSON(
 			http.StatusUnauthorized,
-			gin.H{"error": "unauthorized"},
+			gin.H{
+				"error": "unauthorized",
+			},
 		)
 		return
 	}

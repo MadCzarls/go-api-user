@@ -34,7 +34,7 @@ func Run() {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	//listening on the channel - blocks further (below code's) execution until signal won't be passed to channel
+	//listening on the channel - blocks further (code below it) execution until signal won't be passed to channel
 	<-quit
 
 	//HANDLING SHUTDOWN BELOW
