@@ -23,7 +23,7 @@ func SetUpRouter() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		userHandler := handler.UserHandler{UserRepository: container.GetUserRepository()}
+		userHandler := handler.UserHandler{UserRepository: container.GetRedisUserRepository()}
 		userGroup := api.Group("/user")
 		{
 			userGroup.GET("", userHandler.GetUserList)
@@ -33,13 +33,13 @@ func SetUpRouter() *gin.Engine {
 		}
 	}
 
-	loginHandler := handler.LoginHandler{UserRepository: container.GetUserRepository()}
+	loginHandler := handler.LoginHandler{UserRepository: container.GetRedisUserRepository()}
 	loginGroup := router.Group("/login")
 	{
 		loginGroup.POST("", loginHandler.Login)
 	}
 
-	profileHandler := handler.ProfileHandler{UserRepository: container.GetUserRepository()}
+	profileHandler := handler.ProfileHandler{UserRepository: container.GetRedisUserRepository()}
 	profileGroup := router.Group("/profile")
 	profileGroup.Use(middleware.AuthMiddleware)
 	{
