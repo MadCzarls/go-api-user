@@ -28,5 +28,4 @@ func (em *envManager) GetVariable(key string) (*string, error) {
 	}
 
 	return &value, nil
-
 }
