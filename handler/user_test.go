@@ -18,7 +18,7 @@ func (u userRepositoryMock) FindById(id string) (*model.User, error) {
 	//transparent method - return the same parameters that will be passed during mocking this method
 	args := u.Called()
 
-	user :=  args.Get(0)
+	user := args.Get(0)
 
 	if user == nil {
 		return nil, args.Error(1)

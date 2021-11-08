@@ -14,7 +14,7 @@ func GetEnvManager() service.VariableGetter {
 		s, err := service.NewEnvManager()
 
 		if err != nil {
-			panic (err)
+			panic(err)
 		}
 		services["envManager"] = s
 	}
