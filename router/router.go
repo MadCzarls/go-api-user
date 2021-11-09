@@ -17,7 +17,7 @@ func SetUpRouter() *gin.Engine {
 	router.Use(
 		sessions.Sessions(
 			*envManager.GetEnvString("SESSION_COOKIE_NAME"),
-			*session.SetUpSession(),
+			*session.SetUpCookieStore(),
 		),
 	)
 
