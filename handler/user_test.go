@@ -47,7 +47,15 @@ func (u userRepositoryMock) Create(user *model.User) (*string, error) {
 }
 
 func (u userRepositoryMock) Update(id string, user *model.User) error {
-	panic("implement me")
+	args := u.Called()
+
+	err := args.Get(0)
+
+	if err == nil {
+		return nil
+	}
+
+	return args.Error(0)
 }
 
 func TestUserHandler_GetUserList_ReturnsListOfUsersProvidedByRepository(t *testing.T) {
@@ -162,7 +170,7 @@ func TestUserHandler_GetUser_Returns200IfUserFound(t *testing.T) {
 	assert.Equal(t, expectedResponse, responseWriter.Body.String())
 }
 
-func TestUserHandler_CreateUser_Returns201IfUserCreated(t *testing.T) {
+func TestUserHandler_Create_Returns201IfUserCreated(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 
 	testContext, _ := gin.CreateTestContext(responseWriter)
@@ -182,7 +190,7 @@ func TestUserHandler_CreateUser_Returns201IfUserCreated(t *testing.T) {
 	assert.Equal(t, expectedResponse, responseWriter.Body.String())
 }
 
-func TestUserHandler_CreateUser_Returns400IfRequestCannotBeBind(t *testing.T) {
+func TestUserHandler_Create_Returns400IfRequestCannotBeBind(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 
 	testContext, _ := gin.CreateTestContext(responseWriter)
@@ -200,7 +208,7 @@ func TestUserHandler_CreateUser_Returns400IfRequestCannotBeBind(t *testing.T) {
 	assert.Equal(t, expectedResponse, responseWriter.Body.String())
 }
 
-func TestUserHandler_CreateUser_Returns400IfErrorThrownOnCreation(t *testing.T) {
+func TestUserHandler_Create_Returns400IfErrorThrownOnCreation(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 
 	testContext, _ := gin.CreateTestContext(responseWriter)
@@ -220,7 +228,7 @@ func TestUserHandler_CreateUser_Returns400IfErrorThrownOnCreation(t *testing.T) 
 	assert.Equal(t, expectedResponse, responseWriter.Body.String())
 }
 
-func TestUserHandler_CreateUser_Returns400IfRequestDataNotValid(t *testing.T) {
+func TestUserHandler_Create_Returns400IfRequestDataNotValid(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 
 	testContext, _ := gin.CreateTestContext(responseWriter)
@@ -234,6 +242,64 @@ func TestUserHandler_CreateUser_Returns400IfRequestDataNotValid(t *testing.T) {
 	handler.Create(testContext)
 
 	expectedResponse := "{\"error\":\"json: cannot unmarshal number into Go struct field User.username of type string\"}"
+
+	assert.Equal(t, 400, responseWriter.Code)
+	assert.Equal(t, expectedResponse, responseWriter.Body.String())
+}
+
+func TestUserHandler_Update_Returns200IfUserUpdated(t *testing.T) {
+	responseWriter := httptest.NewRecorder()
+	userId := "678"
+
+	queryParams := gin.Params{
+		gin.Param{
+			Key:   "id",
+			Value: userId,
+		},
+	}
+
+	currentUser := model.User{Id: userId, Username: "BeforeUpdate", Age: 12}
+
+	testContext, _ := gin.CreateTestContext(responseWriter)
+	testContext.Params = queryParams
+	testContext.Request, _ = http.NewRequest("PUT", "/", bytes.NewBufferString("{\"username\":\"AfterUpdate\",\"age\":21}"))
+
+	userRepository := new(userRepositoryMock)
+	userRepository.On("Update").Return(nil)
+	userRepository.On("FindById", testContext.Param("id")).Return(&currentUser, nil)
+
+	handler := UserHandler{userRepository}
+	handler.Update(testContext)
+
+	expectedResponse := "{}"
+
+	assert.Equal(t, 200, responseWriter.Code)
+	assert.Equal(t, expectedResponse, responseWriter.Body.String())
+}
+
+func TestUserHandler_Update_Returns400IfErrorThrown(t *testing.T) {
+	responseWriter := httptest.NewRecorder()
+	userId := "678"
+
+	queryParams := gin.Params{
+		gin.Param{
+			Key:   "id",
+			Value: userId,
+		},
+	}
+
+	testContext, _ := gin.CreateTestContext(responseWriter)
+	testContext.Params = queryParams
+	testContext.Request, _ = http.NewRequest("PUT", "/", bytes.NewBufferString("{\"not_supported_syntax\":23}"))
+
+	userRepository := new(userRepositoryMock)
+	userRepository.AssertNumberOfCalls(t, "Update", 0)
+	userRepository.AssertNumberOfCalls(t, "FindById", 0)
+
+	handler := UserHandler{userRepository}
+	handler.Update(testContext)
+
+	expectedResponse := "{\"error\":\"Key: 'User.Username' Error:Field validation for 'Username' failed on the 'required' tag\\nKey: 'User.Age' Error:Field validation for 'Age' failed on the 'required' tag\"}"
 
 	assert.Equal(t, 400, responseWriter.Code)
 	assert.Equal(t, expectedResponse, responseWriter.Body.String())
