@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mad-czarls/go-api-user/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -17,7 +20,6 @@ type userRepositoryMock struct {
 func (u userRepositoryMock) FindById(id string) (*model.User, error) {
 	//transparent method - return the same parameters that will be passed during mocking this method
 	args := u.Called()
-
 	user := args.Get(0)
 
 	if user == nil {
@@ -34,7 +36,14 @@ func (u userRepositoryMock) FindAll() ([]model.User, error) {
 }
 
 func (u userRepositoryMock) Create(user *model.User) (*string, error) {
-	panic("implement me")
+	args := u.Called()
+	id := args.Get(0)
+
+	if id == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*string), args.Error(1)
 }
 
 func (u userRepositoryMock) Update(id string, user *model.User) error {
@@ -150,5 +159,82 @@ func TestUserHandler_GetUser_Returns200IfUserFound(t *testing.T) {
 	expectedResponse := "{\"Id\":\"123\",\"username\":\"U123\",\"age\":123}"
 
 	assert.Equal(t, 200, responseWriter.Code)
+	assert.Equal(t, expectedResponse, responseWriter.Body.String())
+}
+
+func TestUserHandler_CreateUser_Returns201IfUserCreated(t *testing.T) {
+	responseWriter := httptest.NewRecorder()
+
+	testContext, _ := gin.CreateTestContext(responseWriter)
+
+	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"username\":\"Johnny\",\"age\":66}"))
+
+	expectedUserId := "12345"
+	userRepository := new(userRepositoryMock)
+	userRepository.On("Create").Return(&expectedUserId, nil)
+
+	handler := UserHandler{userRepository}
+	handler.Create(testContext)
+
+	expectedResponse := fmt.Sprintf("{\"id\":\"%s\"}", expectedUserId)
+
+	assert.Equal(t, 201, responseWriter.Code)
+	assert.Equal(t, expectedResponse, responseWriter.Body.String())
+}
+
+func TestUserHandler_CreateUser_Returns400IfRequestCannotBeBind(t *testing.T) {
+	responseWriter := httptest.NewRecorder()
+
+	testContext, _ := gin.CreateTestContext(responseWriter)
+
+	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"some_not_supported_data\":12}"))
+
+	userRepository := new(userRepositoryMock)
+
+	handler := UserHandler{userRepository}
+	handler.Create(testContext)
+
+	expectedResponse := "{\"error\":\"Key: 'User.Username' Error:Field validation for 'Username' failed on the 'required' tag\\nKey: 'User.Age' Error:Field validation for 'Age' failed on the 'required' tag\"}"
+
+	assert.Equal(t, 400, responseWriter.Code)
+	assert.Equal(t, expectedResponse, responseWriter.Body.String())
+}
+
+func TestUserHandler_CreateUser_Returns400IfErrorThrownOnCreation(t *testing.T) {
+	responseWriter := httptest.NewRecorder()
+
+	testContext, _ := gin.CreateTestContext(responseWriter)
+
+	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"username\":\"Jimmy\",\"age\":24}"))
+
+	err := errors.New("error thrown on user creation")
+	userRepository := new(userRepositoryMock)
+	userRepository.On("Create").Return(nil, err)
+
+	handler := UserHandler{userRepository}
+	handler.Create(testContext)
+
+	expectedResponse := "{\"error\":\"error thrown on user creation\"}"
+
+	assert.Equal(t, 400, responseWriter.Code)
+	assert.Equal(t, expectedResponse, responseWriter.Body.String())
+}
+
+func TestUserHandler_CreateUser_Returns400IfRequestDataNotValid(t *testing.T) {
+	responseWriter := httptest.NewRecorder()
+
+	testContext, _ := gin.CreateTestContext(responseWriter)
+
+	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"username\":123,\"age\":\"24\"}"))
+
+	userRepository := new(userRepositoryMock)
+	userRepository.On("Create").Return(nil, nil)
+
+	handler := UserHandler{userRepository}
+	handler.Create(testContext)
+
+	expectedResponse := "{\"error\":\"json: cannot unmarshal number into Go struct field User.username of type string\"}"
+
+	assert.Equal(t, 400, responseWriter.Code)
 	assert.Equal(t, expectedResponse, responseWriter.Body.String())
 }
