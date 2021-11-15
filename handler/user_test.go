@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mad-czarls/go-api-user/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type userRepositoryMock struct {
@@ -71,7 +72,7 @@ func TestUserHandler_GetUserList_ReturnsListOfUsersProvidedByRepository(t *testi
 	users = append(users, user2)
 	userRepository.On("FindAll").Return(users, nil)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.GetUserList(testContext)
 
 	expectedResponse := "[{\"Id\":\"1\",\"username\":\"U1\",\"age\":1},{\"Id\":\"2\",\"username\":\"U2\",\"age\":2}]"
@@ -88,7 +89,7 @@ func TestUserHandler_GetUserList_Returns500IfErrorInRepository(t *testing.T) {
 	err := errors.New("error thrown in repository")
 	userRepository.On("FindAll").Return([]model.User{}, err)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.GetUserList(testContext)
 
 	expectedResponse := "{\"error\":\"error thrown in repository\"}"
@@ -112,7 +113,7 @@ func TestUserHandler_GetUser_Returns500IfErrorInRepository(t *testing.T) {
 	err := errors.New("error thrown in repository")
 	userRepository.On("FindById").Return(nil, err)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.GetUser(testContext)
 
 	expectedResponse := "{\"error\":\"error thrown in repository\"}"
@@ -135,7 +136,7 @@ func TestUserHandler_GetUser_Returns404IfUserNotFound(t *testing.T) {
 	userRepository := new(userRepositoryMock)
 	userRepository.On("FindById").Return(nil, nil)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.GetUser(testContext)
 
 	expectedResponse := "{}"
@@ -161,7 +162,7 @@ func TestUserHandler_GetUser_Returns200IfUserFound(t *testing.T) {
 	userRepository := new(userRepositoryMock)
 	userRepository.On("FindById").Return(&user, nil)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.GetUser(testContext)
 
 	expectedResponse := "{\"Id\":\"123\",\"username\":\"U123\",\"age\":123}"
@@ -181,7 +182,7 @@ func TestUserHandler_Create_Returns201IfUserCreated(t *testing.T) {
 	userRepository := new(userRepositoryMock)
 	userRepository.On("Create").Return(&expectedUserId, nil)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.Create(testContext)
 
 	expectedResponse := fmt.Sprintf("{\"id\":\"%s\"}", expectedUserId)
@@ -199,7 +200,7 @@ func TestUserHandler_Create_Returns400IfRequestCannotBeBind(t *testing.T) {
 
 	userRepository := new(userRepositoryMock)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.Create(testContext)
 
 	expectedResponse := "{\"error\":\"Key: 'User.Username' Error:Field validation for 'Username' failed on the 'required' tag\\nKey: 'User.Age' Error:Field validation for 'Age' failed on the 'required' tag\"}"
@@ -219,7 +220,7 @@ func TestUserHandler_Create_Returns400IfErrorThrownOnCreation(t *testing.T) {
 	userRepository := new(userRepositoryMock)
 	userRepository.On("Create").Return(nil, err)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.Create(testContext)
 
 	expectedResponse := "{\"error\":\"error thrown on user creation\"}"
@@ -238,7 +239,7 @@ func TestUserHandler_Create_Returns400IfRequestDataNotValid(t *testing.T) {
 	userRepository := new(userRepositoryMock)
 	userRepository.On("Create").Return(nil, nil)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.Create(testContext)
 
 	expectedResponse := "{\"error\":\"json: cannot unmarshal number into Go struct field User.username of type string\"}"
@@ -268,7 +269,7 @@ func TestUserHandler_Update_Returns200IfUserUpdated(t *testing.T) {
 	userRepository.On("Update").Return(nil)
 	userRepository.On("FindById", testContext.Param("id")).Return(&currentUser, nil)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.Update(testContext)
 
 	expectedResponse := "{}"
@@ -296,7 +297,7 @@ func TestUserHandler_Update_Returns400IfErrorThrown(t *testing.T) {
 	userRepository.AssertNumberOfCalls(t, "Update", 0)
 	userRepository.AssertNumberOfCalls(t, "FindById", 0)
 
-	handler := UserHandler{userRepository}
+	handler := Handler{userRepository}
 	handler.Update(testContext)
 
 	expectedResponse := "{\"error\":\"Key: 'User.Username' Error:Field validation for 'Username' failed on the 'required' tag\\nKey: 'User.Age' Error:Field validation for 'Age' failed on the 'required' tag\"}"

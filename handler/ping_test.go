@@ -2,17 +2,18 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPingHandler_Status(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 	testContext, _ := gin.CreateTestContext(responseWriter)
 
-	handler := PingHandler{}
+	handler := Handler{}
 	handler.Status(testContext)
 
 	type responseStruct struct {

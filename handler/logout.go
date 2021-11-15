@@ -1,16 +1,14 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/mad-czarls/go-api-user/middleware"
-	"net/http"
 )
 
-type LogoutHandler struct {
-}
-
-func (handler LogoutHandler) Logout(context *gin.Context) {
+func (handler *Handler) Logout(context *gin.Context) {
 	session := sessions.Default(context)
 	userId := session.Get(middleware.UserKey)
 

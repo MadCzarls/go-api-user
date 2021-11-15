@@ -1,24 +1,35 @@
-package server
+package server // this is your APP or MAIN package
 
 import (
 	"context"
-	"github.com/mad-czarls/go-api-user/container"
-	"github.com/mad-czarls/go-api-user/router"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/mad-czarls/go-api-user/config"
+	datasource "github.com/mad-czarls/go-api-user/datasource/redis" // bad nameing
+	"github.com/mad-czarls/go-api-user/handler"
+	"github.com/mad-czarls/go-api-user/repository/redis"
+	"github.com/mad-czarls/go-api-user/router"
 )
 
-func Run() {
-	redisDataSource := container.GetRedisDataSource()
+func Run() (err error) {
+
+	cfg := config.Config{} //! TODO parse from env
+
+	ds := datasource.NewDataSource(cfg)
+
+	repository := redis.NewUserRepository(ds)
+
+	handler := handler.NewHandler(repository)
 
 	//setting up the server
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: router.SetUpRouter(),
+		Handler: router.SetUpRouter(cfg, *handler),
 	}
 
 	//starting server; it is done in goroutine since we want code below (shutdown handling) to be executed
@@ -32,6 +43,7 @@ func Run() {
 
 	//create a channel to listen to interrupt signals from OS (e.g. SIGINT = ctrl+c on Linux)
 	quit := make(chan os.Signal)
+	//! should be buffered?
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	//listening on the channel - blocks further (code below it) execution until signal won't be passed to channel
@@ -44,10 +56,13 @@ func Run() {
 	//cleanup called AFTER shutdown below will be executed
 	defer func() {
 		// add custom processes cleanup here: close database, handle queues etc.
-		err := redisDataSource.Close()
-		if err != nil {
+		dserr := ds.Close()
+		if dserr != nil {
 			log.Fatalf("Error when shutting down Redis connection: %v\n", err)
 		}
+
+		err = dserr
+
 		// canceling all built-in processes
 		cancel()
 	}()
@@ -58,4 +73,6 @@ func Run() {
 		log.Fatalf("Server shutdown with error: %v\n", err)
 	}
 	log.Println("Server has been shut down")
+
+	return nil
 }

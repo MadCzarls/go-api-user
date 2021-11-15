@@ -2,13 +2,23 @@ package redis
 
 import (
 	"fmt"
+
 	"github.com/go-redis/redis/v8"
-	"github.com/mad-czarls/go-api-user/service"
+	"github.com/mad-czarls/go-api-user/config"
 )
 
 type DataSource struct {
 	*redis.Client
-	service.VariableGetter
+}
+
+func NewDataSource(cfg config.Config) *DataSource {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.Addr,
+		Password: cfg.Password,
+		DB:       cfg.Db,
+	})
+
+	return &DataSource{Client: rdb}
 }
 
 func (ds *DataSource) Close() error {
@@ -17,18 +27,4 @@ func (ds *DataSource) Close() error {
 	}
 
 	return nil
-}
-
-func NewDataSource(envManager service.VariableGetter) *DataSource {
-	addr := envManager.GetEnvString("REDIS_HOST")
-	password := envManager.GetEnvString("REDIS_PASSWORD")
-	db := envManager.GetEnvInt("REDIS_DATABASE")
-
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     *addr,
-		Password: *password,
-		DB:       *db,
-	})
-
-	return &DataSource{Client: rdb}
 }

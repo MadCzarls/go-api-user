@@ -1,18 +1,23 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/mad-czarls/go-api-user/middleware"
 	"github.com/mad-czarls/go-api-user/model"
-	"net/http"
 )
 
-type LoginHandler struct {
+type Handler struct {
 	model.UserRepository
 }
 
-func (handler LoginHandler) Login(context *gin.Context) {
+func NewHandler(repo model.UserRepository) *Handler {
+	return &Handler{repo}
+}
+
+func (handler *Handler) Login(context *gin.Context) {
 	var authData model.Auth
 	if err := context.ShouldBindJSON(&authData); err != nil {
 		context.JSON(
