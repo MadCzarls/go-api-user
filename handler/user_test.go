@@ -5,64 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/mad-czarls/go-api-user/mock"
 	"github.com/mad-czarls/go-api-user/model"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-type userRepositoryMock struct {
-	mock.Mock
-}
-
-func (u userRepositoryMock) FindById(id string) (*model.User, error) {
-	//transparent method - return the same parameters that will be passed during mocking this method
-	args := u.Called()
-	user := args.Get(0)
-
-	if user == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (u userRepositoryMock) FindAll() ([]model.User, error) {
-	//transparent method - return the same parameters that will be passed during mocking this method
-	args := u.Called()
-	return args.Get(0).([]model.User), args.Error(1)
-}
-
-func (u userRepositoryMock) Create(user *model.User) (*string, error) {
-	args := u.Called()
-	id := args.Get(0)
-
-	if id == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*string), args.Error(1)
-}
-
-func (u userRepositoryMock) Update(id string, user *model.User) error {
-	args := u.Called()
-
-	err := args.Get(0)
-
-	if err == nil {
-		return nil
-	}
-
-	return args.Error(0)
-}
-
 func TestUserHandler_GetUserList_ReturnsListOfUsersProvidedByRepository(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 	testContext, _ := gin.CreateTestContext(responseWriter)
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	var users []model.User
 	user1 := model.User{Id: "1", Username: "U1", Age: 1}
 	user2 := model.User{Id: "2", Username: "U2", Age: 2}
@@ -84,7 +39,7 @@ func TestUserHandler_GetUserList_Returns500IfErrorInRepository(t *testing.T) {
 	responseWriter := httptest.NewRecorder()
 	testContext, _ := gin.CreateTestContext(responseWriter)
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	err := errors.New("error thrown in repository")
 	userRepository.On("FindAll").Return([]model.User{}, err)
 
@@ -108,7 +63,7 @@ func TestUserHandler_GetUser_Returns500IfErrorInRepository(t *testing.T) {
 	testContext, _ := gin.CreateTestContext(responseWriter)
 	testContext.Params = queryParams
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	err := errors.New("error thrown in repository")
 	userRepository.On("FindById").Return(nil, err)
 
@@ -132,7 +87,7 @@ func TestUserHandler_GetUser_Returns404IfUserNotFound(t *testing.T) {
 	testContext, _ := gin.CreateTestContext(responseWriter)
 	testContext.Params = queryParams
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.On("FindById").Return(nil, nil)
 
 	handler := UserHandler{userRepository}
@@ -158,7 +113,7 @@ func TestUserHandler_GetUser_Returns200IfUserFound(t *testing.T) {
 	testContext, _ := gin.CreateTestContext(responseWriter)
 	testContext.Params = queryParams
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.On("FindById").Return(&user, nil)
 
 	handler := UserHandler{userRepository}
@@ -178,7 +133,7 @@ func TestUserHandler_Create_Returns201IfUserCreated(t *testing.T) {
 	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"username\":\"Johnny\",\"age\":66}"))
 
 	expectedUserId := "12345"
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.On("Create").Return(&expectedUserId, nil)
 
 	handler := UserHandler{userRepository}
@@ -197,7 +152,7 @@ func TestUserHandler_Create_Returns400IfRequestCannotBeBind(t *testing.T) {
 
 	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"some_not_supported_data\":12}"))
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 
 	handler := UserHandler{userRepository}
 	handler.Create(testContext)
@@ -216,7 +171,7 @@ func TestUserHandler_Create_Returns400IfErrorThrownOnCreation(t *testing.T) {
 	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"username\":\"Jimmy\",\"age\":24}"))
 
 	err := errors.New("error thrown on user creation")
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.On("Create").Return(nil, err)
 
 	handler := UserHandler{userRepository}
@@ -235,7 +190,7 @@ func TestUserHandler_Create_Returns400IfRequestDataNotValid(t *testing.T) {
 
 	testContext.Request, _ = http.NewRequest("POST", "/", bytes.NewBufferString("{\"username\":123,\"age\":\"24\"}"))
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.On("Create").Return(nil, nil)
 
 	handler := UserHandler{userRepository}
@@ -264,7 +219,7 @@ func TestUserHandler_Update_Returns200IfUserUpdated(t *testing.T) {
 	testContext.Params = queryParams
 	testContext.Request, _ = http.NewRequest("PUT", "/", bytes.NewBufferString("{\"username\":\"AfterUpdate\",\"age\":21}"))
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.On("Update").Return(nil)
 	userRepository.On("FindById", testContext.Param("id")).Return(&currentUser, nil)
 
@@ -292,7 +247,7 @@ func TestUserHandler_Update_Returns400IfErrorThrown(t *testing.T) {
 	testContext.Params = queryParams
 	testContext.Request, _ = http.NewRequest("PUT", "/", bytes.NewBufferString("{\"not_supported_syntax\":23}"))
 
-	userRepository := new(userRepositoryMock)
+	userRepository := new(mock.UserRepositoryMock)
 	userRepository.AssertNumberOfCalls(t, "Update", 0)
 	userRepository.AssertNumberOfCalls(t, "FindById", 0)
 

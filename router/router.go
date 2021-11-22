@@ -55,6 +55,7 @@ func SetUpRouter() *gin.Engine {
 	logoutHandler := handler.LogoutHandler{}
 
 	logoutGroup := router.Group("/logout")
+	logoutGroup.Use(middleware.AuthMiddleware)
 	{
 		logoutGroup.GET("", logoutHandler.Logout)
 	}
